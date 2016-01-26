@@ -1,0 +1,28 @@
+---
+layout: post
+title: Thoughts on Dijkstra Variant I
+date: 2016-01-24 20:29:59.000000000 -06:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _publicize_job_id: '19082678036'
+author:
+  login: kozondata
+  email: kozondata@gmail.com
+  display_name: kozondata
+  first_name: ''
+  last_name: ''
+---
+<p>This solution follows the same general train of thought as Dijkstra but unlike the canonical Dijkstra algorithm there is no priority queue. I haven't done any meaningful complexity analysis on either but my gut feeling is that the canonical Dijkstra algorithm is a little faster but not by much in the general case, whereas my approach is a little more intuitive.</p>
+<p>Specifically, the idea behind Dijkstra is that you initialize all the nodes to be infinite distance from the origin node, except the origin itself which is distance zero from itself. (In our problem, infinite distance is represented by SOME_BIG_NUMBER and the distance from the origin to itself is the weight of that vertex, but the reasoning is the same).</p>
+<p>Then, among the direct neighbors of the origin, the neighbor which has the smallest edge weight from the origin (or vertex weight in our case), has that same weight in the final solution. Any other path to that neighbor requires going through another neighbor first, and that path must have equal or higher weight because the distance from the origin to any of the other neighbors is greater than or equal to the distance to the nearest neighbor (plus presumably there is some distance in the path from another neighbor to the nearest neighbor if we traveled that path).  Therefore, that neighbor is "solved" and we can add it with the origin into a set of vertices whose best path is known.</p>
+<p>And crucially, we can take the neighbors of that nearest neighbor, and improve the known shortest path between the origin and those vertices, specifically that the sum of the distance between the origin and its nearest neighbor and that that neighbor to one of <em>its</em> neighbors is less than what was known before, when we initialized that distance to be infinity.</p>
+<p>By extension, suppose we have some some larger set of vertices including the origin whose best path is already known.  Then among the remaining vertices, the shortest known path from the origin to one of the remaining vertices is in fact the actual shortest path from the origin to that vertex.  Any other path to that vertex is a path starting at the origin, perhaps goes through some "known vertices" until it hits an unknown vertex, and that path is already longer than the one we are looking at.  Therefore, as they say in the descriptions of Dijkstra, each vertex is visited only once.</p>
+<p>My algorithm has a slightly different intuition, and for me at least, an easier one.  As in Dijkstra, we begin by initializing all the distances to infinity, and then "improving" the distance of origin to itself.  Every time a there is an improvement in the distance from the origin to some vertex, we mark that vertex with a flag.  Then for every iteration, we go through all of the flagged vertices, check if we can improve the distance from the origin to the neighbors of the flagged vertices.  If we can, we record that improvement and set a new flag to that neighbor.  Then we wipe away the old flags and iterate again with the new flags.</p>
+<p>If we ever get to an iteration where no vertices are flagged, ie no improvements are made, then we have found the optimal distance from the origin to <em>all</em> the vertices in the graph.  Each iteration improves the subset of vertices where the known best path to the vertex according to the algorithm is the actual minimum path by at least one vertex for the same reason the canonical Dijkstra does.  (As a practical matter, for a typical iteration it's likely that the optimum path for several vertices is found.)  Therefore when there are no more iterations, all the of the minimum paths have been found.</p>
+<p>&nbsp;</p>

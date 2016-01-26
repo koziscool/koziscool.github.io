@@ -1,0 +1,27 @@
+---
+layout: post
+title: Thoughts on Dijkstra Variant II
+date: 2016-01-24 21:00:18.000000000 -06:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _publicize_job_id: '19083406612'
+author:
+  login: kozondata
+  email: kozondata@gmail.com
+  display_name: kozondata
+  first_name: ''
+  last_name: ''
+---
+<p>I refactored my code a few times since I solved the problem itself, and the code I published a couple of posts ago is the version I like best of all the ones I wrote.</p>
+<p>Specifically in terms of object orientation and modularity, for the moment at least I've convinced myself that the difference between logic and data is much more fundamental then the encapsulation of other "objects", in the case graphs, edges and vertices.</p>
+<p>Looking at the code it seems that the graph.rb is an irrelevant little file, and for the most part it is, but I like having it nonetheless because it implicitly defines the interface for the class PathFinder in e83.rb.  If you look at the implementation of PathFinder, it doesn't use any information from a graph other than what's available in the GraphWithVertexWeights base class.</p>
+<p>Everything in e83_data.rb is just the construction of the graph object, and no details of that construction are leveraged outside itself.  So if a critic were to quibble that width and height are hardcoded in EulerGraph (or anything else for that matter), at least the faults are well-encapsulated.</p>
+<p>And following from that, any graph with index weights can be solved with PathFinder.  Beyond what was specified in Euler 83, we can use this algorithm and this code to find minimum paths for any connected graph with a designated vertex of origin (of any shape, size, or structure).  In addition, PathFinder needs every bit of information that it has access to.  So anything that doesn't meaningfully conform to a GraphWithVertexWeights can't be solved this way.</p>
+<p>One thing I'm not sure of is the parallel data structure of vertices inside PathFinder, our_vertex_hash.  It seems a little un-DRY-ish to me, but in consideration of a few alternatives I left in in there anyway.  I'd like to glom it onto the vertex objects we get with the graph because it's all information tied to a particular vertex (and keyed by the same key).  But even if it's all information that "should" be tied together as representing the same object, it's not the same object at the same time.  That's to say, a VertexWithWeight has a weight all the time.  But it only has a min_path and a min_path_weight if our algorithm is run on it.  Therefore we shouldn't be encouraging the illusion that such information will be available any time we see a VertexWithWeight.</p>
+<p>&nbsp;</p>

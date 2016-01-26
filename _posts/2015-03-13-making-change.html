@@ -1,0 +1,74 @@
+---
+layout: post
+title: Making Change
+date: 2015-03-13 21:21:13.000000000 -05:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  _wpas_skip_facebook: '1'
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _publicize_pending: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+author:
+  login: kozondata
+  email: kozondata@gmail.com
+  display_name: kozondata
+  first_name: ''
+  last_name: ''
+---
+<p>Longtime no see, patient readers.  I'm now at HackReactor, an intense web stack coding immersive.  A week or so ago, our group had a toy problem wherein we were asked to find the unique number of ways to make change for an arbitrary amount of money given a fixed set of coins (eg, penny, nickel, dime, quarter, dollar or whatever).  It's a common problem, phrased slightly differently each time.  Specifically, the way it was put to us was this:</p>
+<pre>/*
+In England the currency is made up of pound, £, and pence, p, 
+and there are eight coins in general circulation:
+
+1p piece
+2p piece
+5p piece
+10p piece
+20p piece
+50p piece
+1 euro (100p)
+2 euro (200p)
+
+It is possible to make £2 in the following way:
+
+1 * £1 + 1 * 50p + 2 * 20p + 1 * 5p + 1 * 2p + 3 * 1p
+How many different ways can £2 be made using any number of coins?
+*/</pre>
+<p>There are several ways to do this.  IMO, the simplest one follows (though not the most efficient).</p>
+<p>But before we get to the code let's describe in words how we intend to approach the problem.  The key insight is that there is a recursive relationship available to us based on the size of the biggest coin available in the fixed set.  For example, to make change for 7 pence, we only need to consider the 1p, 2p, and 5p coins.  For the 5p coins there are two possibilities, either there are one or none, ie, floor( 7/ 5 ) + 1.  That reduces to a fixed number of subproblems (2 in this case), corresponding to making change for 7p with a largest coin of 2p (no 5p). or making change for 2p with a largest available coin of 2p (1 5p coin). In addition we also need to know that there is only one way to make change for no pence or one pence, or if the penny is the only coin available. Like most things at HackReactor, we working in JavaScript here.  The answer is below.</p>
+<pre>coinsArray = [
+  1, 2, 5, 10, 20, 50, 100, 200 
+];
+
+var makeChange = function( total, coins, bigCoinSize){
+  if ( total === 1 || total === 0 ) return 1;
+  if ( bigCoinSize === 1) return 1;
+
+  coins = coins || coinsArray;
+  bigCoinSize = bigCoinSize || coins.slice(-1)[0];
+
+  var retVal = 0;
+  var numBigCoin = Math.floor( total / bigCoinSize );
+
+  var newCoins = coins.slice(0, -1);
+  var newBigCoin = coins.slice(-2)[0];
+
+  for ( ; numBigCoin &gt;= 0; numBigCoin--) {
+    retVal += makeChange(total - numBigCoin * bigCoinSize, 
+newCoins, newBigCoin  )
+  }
+
+  return retVal;
+};
+
+console.log(makeChange(7));</pre>
+<p>As a final note, it's worth mentioning that this solution requires that the one penny or one pence (or one whatever coin is available).  For extra credit, the reader is encourage to modify this function to handle the case where that is not so.</p>

@@ -1,0 +1,56 @@
+---
+layout: post
+title: Short Note on Python Iterators
+date: 2012-02-05 17:44:50.000000000 -06:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  _edit_last: '25416316'
+author:
+  login: kozondata
+  email: kozondata@gmail.com
+  display_name: kozondata
+  first_name: ''
+  last_name: ''
+---
+<p>A quick note on Python iterators.  There are circumstances where we wish to iterate through a user-defined class, especially if the class is basically a container of objects and a little bit of functionality related to the things.   That's to say, something like this, (either explicitly or implicitly):</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">class ContainerOfThings:
+...
+    def f(self):
+        self.things = [a, b, c, d, e, f]
+
+    def g():        # some functions using or manipulating self.things
+        ...
+    def h():
+        ...
+        ...</p></pre>
+<p>If the user defines an iterator for the class, we can write code that iterates directly on the class itself.  Ie, we can write:</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">for x in a_container:
+    doSomethingWithThing(x)</p></pre>
+<p>instead of </p>
+<pre>
+<p style="line-height:120%;font-size:11px;">for x in a_container.things:
+    doSomethingWithThing(x)</p></pre>
+<p>So far so good, but in the sources I have looked at, what they don't tell you is that there are two slightly different ways to do this.  Either one is fine, but they don't mean exactly the same thing.  In order for a class to function as an iterator it must be (Python) Iterable, which means it must the class must implement __iter__ and whatever is in __iter__() must implement next().  The typical Python containers are Iterable by design, so the first way to make a custom class iterator is the simplest:</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">    def __iter__(self):
+        return iter(self.things)</p></pre>
+<p>That's to say, self.things already has an iterator, so we assign that iterator to be the iterator of the class.  If we do this, in general we should not override next() because somewhere in the install there is already an implementation for next() on Python lists (or other container object) and we implicitly use that.</p>
+<p>If, on the other hand we want to create custom functionality for the things in the list, we should return the class directly as its own Iterable and in that circumstance we do need to override next().  And in that case, we are assuming responsibility for the iteration state of the things so we may also add class members or methods to make sure the iteration is handled smoothly.  Eg,</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">    def __iter__(self):
+        return self
+
+    def next(self):
+        if ( self.current_thing == self.end_of_things ):
+            raise StopIteration
+        else:
+            t = self.things[self.current_thing]
+            self.current_thing += 1
+            return t</p></pre>
+<p>As a general rule of thumb, to make an Python iterator for our class, do one or the other but not both.</p>

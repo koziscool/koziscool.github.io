@@ -1,0 +1,72 @@
+---
+layout: post
+title: Prolog 1
+date: 
+type: post
+published: false
+status: draft
+categories: []
+tags: []
+meta:
+  _edit_last: '25416316'
+author:
+  login: kozondata
+  email: kozondata@gmail.com
+  display_name: kozondata
+  first_name: ''
+  last_name: ''
+---
+<p>I did some Python exercises the other day, working from this <a href="https://sites.google.com/site/prologsite/prolog-problems/1">bunch</a> of problems more or less about list structure.  There's 28 problems on this part of the tutorial, I did #'s 1-26, skipping 27 &amp; 28 for the moment.  I'll get back to them as the motivation strikes.  A few notes are worth mentioning:</p>
+<p>1. Some of the problems are trivialities.  I didn't realize until part way through that the problems were supposed to be done in another language.  So some of the answers are redundant if you were actually writing Python.</p>
+<p>2. Python is a zero-index language.  The domain space is one-index, ie the beginning element of a list is "first" by the context of the problems.  My guess is Prolog is probably one-index too, though I don't know that for sure.  Therefore the code makes modifications in a couple of places.</p>
+<p>3. The results are returned by copy.  Unless I'm forgetting something, there's no attempt at in-place modification.</p>
+<p>There are Python solutions published elsewhere on the internet.  I haven't looked at them yet but I might to see what they did for #27.  In any case here's the code:</p>
+<p>import random import math</p>
+<p>def list_last(a):  try:   r =  a[-1]  except:   r = "out of bounds"    return r</p>
+<p>def next_to_last(a):  try:   r =  a[-2]  except:   r = "out of bounds"  return r</p>
+<p>def kth_element(a, k):  try:   r =  a[k-1]  except:   r = "out of bounds"  return r</p>
+<p>def list_len(a):  return len(a)</p>
+<p>def list_reverse(a):  return a[::-1]</p>
+<p>def is_palindrome(a):  r = True  l = len(a)  for i in range(l):   if a[i] != a[l-i-1]:    r = False    return r</p>
+<p>def my_flatten(a):  f = []  for m in a:   if isinstance(m, list):    f += my_flatten(m)   else:    f.append(m)</p>
+<p>return f</p>
+<p>def remove_dups(a):  r = []  for m in a:   if m not in r:    r.append(m)</p>
+<p>return r</p>
+<p>def pack_dups(a):  if a == []: return []</p>
+<p>s = []  s.append([a[0]])  for i in xrange(1, len(a)):   if a[i] == a[i-1]:    s[-1].append(a[i])   else:    s.append([a[i]])</p>
+<p>return s   def encode(a):  t = []  s = pack_dups(a)  for l in s:   t.append([len(l), l[0]])  return t</p>
+<p>def modified_encode(a):  t = []  s = pack_dups(a)  for l in s:   if len(l) &gt; 1:    t.append([len(l), l[0]])   else:    t.append(l[0])    return t</p>
+<p>def encode_direct(a):  if a == []: return []  if len(a) == 1: return a</p>
+<p>t, j = [], 0  current_mem = a[0]  for i in xrange(1, len(a) -1 ):   j += 1   if a[i] != a[i-1]:    if j &gt; 1:     t.append([j, current_mem])    else:     t.append(current_mem)    current_mem = a[i]    j = 0</p>
+<p>if a[-1] == a[-2]:   j += 1   t.append([j, current_mem])  else:   t.append(current_mem)    return t</p>
+<p>def decode_modified(a):  r = []  for m in a:   if isinstance(m, list):    for i in xrange(m[0]):     r.append(m[1])   else:    r.append(m)  return r</p>
+<p>def make_dups(a, n):  r = [m for m in a for i in xrange(n)]  return r</p>
+<p>def drop_every_nth(a, n):  r = []  for i in xrange( len(a) ):   if (i+1) % n != 0:    r.append(a[i])  return r</p>
+<p>def split_list(a, n):  s = a[: n]  t = a[n:]  return [a[: n], a[n:]]</p>
+<p>def list_slice(a, n1, n2):  return a[n1-1:n2]</p>
+<p>def list_rotate(a, n):  if n &gt;= 0:   s = split_list(a,n)  else:   s = split_list(a, len(a) + n)</p>
+<p>return s[1] + s[0]</p>
+<p>def list_remove_at(a, n):   return a[: n-1] + a[n:]</p>
+<p>def list_insert_at(a, n, x):   return a[: n] + [x] + a[n:]</p>
+<p>def list_range(b,e):   return range(b, e + 1)</p>
+<p>def list_extract_random(a, n):  if n &gt; len(a): return a</p>
+<p>random.seed()  r, random_index = [], []  new_random_try = int( math.floor(random.random() * len(a)) )  random_index.append(new_random_try)</p>
+<p>for i in xrange(n-1):   while new_random_try in random_index:    new_random_try = int( math.floor(random.random() * len(a)) )   random_index.append(new_random_try)</p>
+<p>for i in random_index:   r.append(a[i])    return r</p>
+<p>def lotto(n, k):  lr = list_range(1, n)  return list_extract_random(lr, k)</p>
+<p>def list_permute(a):  return list_extract_random(a, len(a))</p>
+<p>def list_combinations(a, k):  if k == 0: return []  if k == 1: return [[m] for m in a]  if k == len(a): return [a]</p>
+<p>tm = [a[0]]  s = a[1:]</p>
+<p>s1 = list_combinations(s, k-1)  s1 = [tm + m for m in s1]  s2 = list_combinations(s, k)    return s1 + s2</p>
+<p>if __name__ == '__main__':  x = ['a', 'b', 'c', 'd', 'e']  print x, list_last(x)  print x, next_to_last(x)  print x, kth_element(x, 3)  print x, is_palindrome(x)</p>
+<p>z = ['a', 'b', 'c', 'c', 'b', 'a']  print z, is_palindrome(z)</p>
+<p>print x, list_reverse(x)</p>
+<p>ff = ['a', ['b', ['c', 'd'], 'e']]  print ff, my_flatten(ff)</p>
+<p>dd = ['a','a','a','a','b','c','c','a','a','d','e','e','e','e']  print dd, remove_dups(dd)  print dd, pack_dups(dd)  print dd, encode(dd)  print dd, modified_encode(dd)  print dd, encode_direct(dd)  print modified_encode(dd), decode_modified(modified_encode(dd))</p>
+<p>xt = ['a', 'b', 'c']  print xt, make_dups(xt, 3)</p>
+<p>xl = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k']  print xl, drop_every_nth(xl, 3)  r = split_list(xl, 3)  print xl, r[0], r[1]  print xl, list_slice(xl, 3, 7)</p>
+<p>x8 = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']  print x8, list_rotate(x8, 3), list_rotate(x8, -2)</p>
+<p>x4 = ['a', 'b', 'c', 'd']  print x4, list_remove_at(x4, 2), list_insert_at(x4, 2, 'alfa')  print xl, list_extract_random(xl, 3)  print lotto(49, 6)</p>
+<p>x6 = ['a', 'b', 'c', 'd', 'e', 'f']  print x6, list_permute(x6)</p>
+<p>print list_combinations(x, 3)</p>
+<p>&nbsp;</p>
