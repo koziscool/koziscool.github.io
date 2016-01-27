@@ -1,0 +1,33 @@
+<p>In the Prolog <a href="https://sites.google.com/site/prologsite/prolog-problems/4">problems</a>, binary trees are defined in a slightly idiosyncratic way.  Ie, the empty tree is represented by the string 'nil'.  And, every node must have exactly two children, and each child must be either a non-empty binary tree or the empty binary tree 'nil'.</p>
+<p>Ie, in this formulation the one-vertex graph ['x'] is not a binary tree, but the one-vertex graph ['x','nil','nil'] is a binary tree.  Given that, here's a function to determine if a given Python list has the structure of a binary tree.</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">
+def is_singleton(a):
+    return len(a) == 3 and a[1] == 'nil' and a[2] == 'nil'
+
+def is_empty(a):
+    return a == 'nil' or a == ['nil']
+
+def binary_tree(a):
+    if is_empty(a):
+        return True
+    if is_singleton(a):
+        return True
+    
+    if len(a) != 3:
+        return False
+
+    if binary_tree(a[1]) and binary_tree(a[2]):
+        return True
+    else:
+       return False
+
+    
+if __name__ == '__main__':
+    a = ['nil']
+    b = ['k', 'nil', 'nil']
+    c = ['r', 'nil', ['l', 'nil', 'nil'] ]
+    d = ['y', ['z', 'nil', 'nil']]
+
+print binary_tree(a), binary_tree(b), binary_tree(c), binary_tree(d)
+</p></pre>

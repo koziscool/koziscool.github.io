@@ -1,0 +1,137 @@
+<p>A while back I worked on <a href="https://projecteuler.net/problem=83">Euler 83</a> along with a bunch of other Euler Problems.  Euler 83 is the last of three problems (81, 82, 83) about minimizing a path along a predefined matrix subject to various conditions.  At the time I was basically solving these problems through intuition, and 81 and 82 are easy enough to solve that way.  For 83, there are too many branches on the search path, so it requires a more general algorithm of path minimization.  I went to Wikipedia and looked up Dijkstra's algorithm.  Strictly speaking, Dijkstra's algorithm is about path minimization of an arbitrary connected graph with edge weights and this problem has vertex weights instead but as a practical matter it doesn't make any difference.  (It does matter that all the weights are non-negative, as is the case here.)</p>
+<p>In any event other priorities took over and I left the problem undone.</p>
+<p>Then some time down the road I went back and coded up a solution (in Python) with the benefit of having some memory of what Dijkstra's algorithm is, but not directly using it as a reference.  Just recently I refactored that solution into Ruby for the sake of a course I'm currently doing.  In the interest of maintaining at least a modicum of brevity in this post, I'll save a few comments for subsequent posts.  The code is below:</p>
+<pre>##  e83.rb
+##
+require './e83_data.rb'
+require './graph.rb'
+
+VertexInfo = Struct.new( :key, :min_path_weight, :min_path, :weight ) do
+  def to_s
+   "key: #{key} weight: #{weight} min path weight: #{min_path_weight}"
+  end
+  def min_path_string
+    ret_string = "[ "
+    min_path.each do | point |
+    ret_string = ret_string + "#{point} " 
+    end
+    ret_string = ret_string + " ]"
+    ret_string
+  end
+end
+
+class PathFinder
+  SOME_BIG_NUMBER = 10000000000
+  def initialize( graph, origin_key, terminal_key )
+    @graph = graph
+    @our_vertex_hash = {}
+    build_vertex_info
+    @origin = @our_vertex_hash[ origin_key ]
+    @origin.min_path_weight = @origin.weight
+    @improved_path_nodes = { origin_key =&gt; true }
+    @terminal = @our_vertex_hash[ terminal_key ]
+  end
+  def build_vertex_info
+    @graph.nodes.each do |key, node|
+      v_info = VertexInfo.new( node.key, SOME_BIG_NUMBER, [], node.weight )
+      @our_vertex_hash[ node.key ] = v_info
+    end
+  end
+  def find_min_path
+    until @improved_path_nodes.empty?
+      main_loop
+    end
+    puts @terminal.min_path_string
+    puts @terminal.min_path_string.length
+    @terminal.min_path_weight
+  end
+  def main_loop
+    updates = {}
+    @improved_path_nodes.each do | node_key, value |
+      node = @our_vertex_hash[ node_key ]
+      node_neighbors = @graph.nodes[ node_key ].neighbors
+      node_neighbors.each do | neighbor_key |
+        neighbor = @our_vertex_hash[ neighbor_key ]
+        new_path_weight = node.min_path_weight + neighbor.weight
+        if new_path_weight &lt; neighbor.min_path_weight
+          neighbor.min_path_weight = new_path_weight
+          neighbor.min_path = node.min_path + [ neighbor.weight ]
+          updates[ neighbor_key ] = true
+        end
+      end
+    end
+    @improved_path_nodes = updates
+  end
+end
+
+g = EulerGraph.new( )
+pf = PathFinder.new( g, g.origin.key, g.terminal.key )
+puts pf.find_min_path</pre>
+<p>And the subsidiary files graph.rb and e83_data.rb</p>
+<pre>## graph.rb
+##
+VertexWithWeight = Struct.new( :key, :neighbors, :weight )
+
+class GraphWithVertexWeights 
+  attr_accessor :nodes
+  def initialize
+    @nodes = {} # the values held by @nodes should be 
+                # VertexWithWeight's
+  end
+end
+
+##  e83_data.rb
+##
+require './graph.rb'
+
+class EulerGraph &lt; GraphWithVertexWeights
+  GRAPH_NEIGHBOR_DELTA = [ [1, 0], [-1, 0], [0, 1], [0, -1] ]
+
+  attr_reader :width, :height, :origin, :terminal
+  attr_accessor :nodes
+
+  def initialize
+    super
+    build_euler_graph
+  end
+
+  def build_neighbors( node )
+    neighbors = []
+    GRAPH_NEIGHBOR_DELTA.each do | delta |
+      new_row, new_col = node.key[0] + delta[0], node.key[1] + delta[1]
+      if in_bounds?( new_row, new_col)
+        neighbors &lt;&lt; [new_row, new_col]
+      end
+    end
+    node.neighbors = neighbors
+  end
+
+  def in_bounds?( row, col)
+    row &gt;= 0 &amp;&amp; row &lt; width &amp;&amp; col &gt;= 0 &amp;&amp; col &lt; height
+  end
+
+  def build_euler_graph
+    @width = 80
+    @height = 80
+
+    (0...width).each do | x |
+      (0...height).each do | y |
+        key = [x, y]
+        @nodes[ key ] = VertexWithWeight.new( key, [], 0 )
+        build_neighbors( @nodes[ key ])
+      end
+    end
+
+    f = File.open('p081_matrix.txt')
+    lines = f.read().split("\n")
+    lines.each_with_index do | line, row |
+      weights = line.split(',')
+      weights.each_with_index do | w, col |
+        @nodes[ [row, col] ].weight = w.to_i
+      end
+    end
+
+    @origin = @nodes[ [0,0] ]
+    @terminal = @nodes[ [79,79] ]
+  end
+end</pre>

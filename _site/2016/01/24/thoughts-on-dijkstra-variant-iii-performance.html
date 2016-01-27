@@ -1,0 +1,17 @@
+<p>There's a couple of things to say about the performance of this algorithm.  In the case of the Euler83 problem, the algorithm takes 165 iterations to find the min path from the origin to the terminal node, with length 777 vertices (including both endpoints). Frankly for the moment at least, I don't see how that's possible.</p>
+<p>In any event, for the Euler problem the minimum path length from the origin to the terminal is 158 so it would take at least 158 iterations to get there.  So it's a sign of the efficiency of the algorithm that it found <em>all</em> of the min paths in 165 iterations.  There are 6400 vertices in the graph to it would take Dijkstra's algorithm anywhere between 158 and 6400 iterations to find the answer, and when it did it only have access to min paths for some of the vertices.</p>
+<p>There's also an interesting thing I found in terms of time to completion.  In at least one iteration of the code I was putting the flagged vertices into an array container, ie</p>
+<pre>updates = []
+        # .... some other code ....
+          updates &lt;&lt; neighbor_key
+        # .... other code .....
+    @improved_path_nodes = updates
+</pre>
+<p>I saw this and thought that had to be inefficient.  In every iteration of the main loop I would put a vertex into the updates list whether or not it was there already.  Then in the next loop I would check for improvements to its neighbors multiple times, once for every time it was put in the updates array in the prior iteration.</p>
+<p>So then I thought, that's no good, lets just check for dupes, ie</p>
+<pre>          updates &lt;&lt; neighbor_key unless updates.include? neighbor_key
+</pre>
+<p>My initial thought was that would improve performance, until I saw that the running time of my program went from 0.4 seconds to 1.3 seconds on my machine.  Oops.  So then changed the updates from being an array to being a hash, and used the hash as a quasi-set, ie</p>
+<pre>          updates[ neighbor_key ] = true
+</pre>
+<p>This reduced the running time back to 0.4 seconds.  Apparently, at least for this graph the "performance hit" for possibly running the improvement loop for neighbors several times redundantly is negligible, whereas the performance hit for running an include? check is significant.</p>

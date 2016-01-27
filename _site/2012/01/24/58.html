@@ -1,0 +1,39 @@
+<p>Problem 27 of the Prolog <a href="https://sites.google.com/site/prologsite/prolog-problems/1">list</a> is about the multinomial combinations of a set.  The number of multinomial combinations is a pretty simple formula, but according to the problem we must return the combinations themselves, not just the number of them, which is a little trickier.</p>
+<p>Essentially, to implement a basic recursive solution, we must also pass in a list of "defaults", ie the partial solutions.</p>
+<p>There might be a couple ways this solution could be improved. First, all the arrays are copied internally to prevent Python from unintentionally overwriting list objects by alias, so there might be some scaling issues there.  Also, the result is crammed into a single list structure.  That means we have to be a little careful and a little cute with the braces.  That part is probably efficient enough but it might be a little more readable to create a partition solution class.  Or that might be too much overhead, I don't really know for sure.</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">
+def multinomial_combinations(already_placed, to_be_placed, \
+    partition_sizes ):
+
+    if len(to_be_placed) == 0: return [already_placed]
+    if len(to_be_placed) != sum(partition_sizes):
+        print to_be_placed, partition_sizes, 'mismatch'
+        return
+    if len(already_placed) != len(partition_sizes):
+        print 'mismatch'
+        return
+
+    x = to_be_placed[0]
+    remainder = to_be_placed[1:]
+    r = []
+
+    for i in xrange(len(partition_sizes)):
+        if partition_sizes[i] &gt; 0:
+            new_defaults = already_placed[:]
+            new_defaults[i] = already_placed[i] + [x]
+            new_ps = partition_sizes[:]
+            new_ps[i] = partition_sizes[i] - 1
+            r.extend( multinomial_combinations( new_defaults, \
+                        remainder, new_ps ))
+    return r
+
+if __name__ == '__main__':
+    x = ['a', 'b', 'c', 'd', 'e']
+    t = [ [],[],[] ]
+    ps3 = [2, 2, 1]
+ 
+    xcom = multinomial_combinations( t, x, ps3)
+    print len(xcom), xcom
+
+</p></pre>

@@ -1,0 +1,18 @@
+<p>Here is another Euler problem, a well-named one in fact.  For each integer d between 2 and a million, the number of reduced proper fractions n/d is the same as number of positive integers less than d such that gcd(n, d) = 1, which is the mathematical function phi(d) most often known as the Euler totient.  Therefore what we are looking for is the sum of Euler totients phi(d) for every d between 2 and a million inclusive.</p>
+<p>For any given d, the formula for phi(d) is a pretty compact expression of the primes that divide d.  The posted algorithm, besides being elegantly brief is also noteworthy for computing the primes and the totients together.  I had made some other attempts previously which were much less efficient, even when I was simply loading precalculated primes into memory from a text file.</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">
+n = 1000001
+totients = [1 for i in xrange(n)]
+for i in xrange(2, n):
+    if totients[i] == 1:
+        for j in xrange(i, n, i):
+            totients[j] *= i - 1
+            k = j / i
+            while k % i == 0:
+                totients[j] *= i
+                k /= i
+   
+
+print sum(totients)
+</p></pre>

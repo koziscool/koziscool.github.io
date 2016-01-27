@@ -1,0 +1,24 @@
+<p><a href="http://projecteuler.net/problem=91">This</a> is a cute problem.</p>
+<p>It's a combination of coding and intuition. If the intuitive analysis of the problem is right, the coding is pretty easy.</p>
+<p>Given the grid as described in the problem, the vertex of the right angle has to be at the origin, on the x or y axis but not the origin, or off the axes entirely. It should be pretty clearly from geometric inspection that for x1, y1, x2, y2 &lt;= n, the number of right triangles whose right angle meets at the origin is n^2. In a similar way, the number of right triangles whose right angle meets on the axes off the origin is 2 * n^2.</p>
+<p>The leaves the "interior" of the grid. For any point off the axes in the grid P, there is a line between the origin and that point. For any other point in the plane Q, there is a right triangle OPQ if and only if OP is perpendicular to PQ. For given P, there is probably a cute way to count the number of points Q on the grid where Q is on the line perpendicular to OP through P. Offhand I couldn't think of one, so I simply iterated over the whole grid, which is plausible enough when the grid is 51 x 51 as this one is. Therefore we run the following code in Python:</p>
+<pre>
+<p style="line-height:120%;font-size:11px;">
+max = 50
+numtriangles = 0
+
+for x1 in range(1, max+1):
+     for y1 in range(1, max+1):
+          m1 = y1 / float(x1)
+          for x2 in range(0, max + 1):
+               for y2 in range(0, max + 1):
+                    #print x1, y1, x2, y2
+                    if x2 != x1:
+                        m2 = (y2 - y1) / float(x2 - x1)
+                       #print x1, y1, x2, y2, m2
+                        if abs(m1 * m2 + 1) &lt; 0.001:
+                              numtriangles += 1
+                              #print x1, y1, x2, y2
+
+print numtriangles </p></pre>
+<p>Note that OP is perpendicular to PQ iff the slope(OP) * slope(PQ) = -1. There is a degenerate case of a vertical line which has no slope. Fortunately, those cannot occur on interior of the grid so we can ignore them.</p>
